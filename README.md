@@ -1,13 +1,13 @@
 # seccam Motion-Activated Security Camera
 
-Headless, motion-activated still camera built on a Raspberry Pi Zero W, a Raspberry Pi
+Headless, motion-activated still camera built on a Raspberry Pi Zero 2 W, a Raspberry Pi
 camera module, and a PIR motion sensor. When the PIR detects motion, the camera captures
 one still image per second until motion stops. Images are stored locally by date and hour,
 copied to a Windows workstation over SFTP, and pruned from the Pi after a configurable
 number of days. A live view page is available on the local network, and email alerts
 report upload backlogs, lost footage, and capture outages.
 
-**Hardware:** Raspberry Pi Zero W · Raspberry Pi camera module · PIR motion sensor  
+**Hardware:** Raspberry Pi Zero 2 W · Raspberry Pi camera module · PIR motion sensor  
 **Stack:** Python · picamera2 · gpiozero · websockets · paramiko (SFTP) · SQLite · systemd
 
 ---
@@ -39,18 +39,18 @@ new code to start the rest.
 
 ### Hardware
 
-- Raspberry Pi Zero W (the original ARMv6 Zero W, not the Zero 2 W)
+- Raspberry Pi Zero 2 W (a Pi 3, 4, or 5 should also work, but is untested)
 - Any official Raspberry Pi camera module (v1, v2, Camera Module 3, HQ, or Global Shutter),
   connected with a Pi Zero camera ribbon cable (the narrow 22-pin end fits the Zero)
 - PIR motion sensor with a digital output (e.g. HC-SR501)
 - MicroSD card, 16GB or larger
-- Power supply for the Pi Zero W (5V, 2.5A recommended)
-- 2.4 GHz WiFi (the Zero W does not support 5 GHz)
+- Power supply for the Pi Zero 2 W (5V, 2.5A recommended)
+- 2.4 GHz WiFi (the Zero 2 W does not support 5 GHz)
 - A Windows 10 or 11 workstation on the same network to receive images
 
 ### Software
 
-- Raspberry Pi OS Lite **32-bit** (Debian Trixie). The Pi Zero W cannot run the 64-bit image.
+- Raspberry Pi OS Lite 64-bit (Debian Trixie), the same OS as the imx500 project
 - Internet connection during provisioning (for package installation)
 - A computer with SSH access to the Pi
 - On the workstation: the Windows OpenSSH Server optional feature
@@ -161,8 +161,8 @@ The live view is LAN-only with no login. Do not expose these ports to the intern
 
 When nobody has the page open, the server shows the most recent motion image. When a
 viewer connects, the capture script sends a low-resolution preview at about one frame per
-second, and stops when the last viewer disconnects. This keeps CPU load and heat down on
-the Zero W.
+second, and stops when the last viewer disconnects. This keeps CPU load, heat, and WiFi
+traffic down on the Zero 2 W.
 
 ---
 
@@ -229,11 +229,13 @@ sudo ./seccampi_provision_service.sh
 
 ### Why Most Packages Come From apt
 
-The Pi Zero W is ARMv6. Any pip package without a prebuilt ARMv6 wheel compiles from
-source, which can take hours or fail. Everything with compiled code (picamera2, numpy,
-pandas, Pillow, paramiko, lgpio, websockets) is installed through apt, and the venv uses
-`--system-site-packages` to see them. pip only installs the pure-Python packages `astral`
-and `pgeocode`, with `--only-binary=:all:` so it fails fast rather than attempting a build.
+Everything with compiled code (picamera2, numpy, pandas, Pillow, paramiko, lgpio,
+websockets) is installed through apt, and the venv uses `--system-site-packages` to see
+them. picamera2 has to come from apt anyway, and the apt builds are prebuilt for the Pi,
+tested together, smaller on disk than pip wheels, and update with the OS, which matters on
+a 16GB card. pip only installs the pure-Python packages `astral` and `pgeocode`, with
+`--only-binary=:all:` so it can never start compiling a dependency from source on a
+512MB board.
 
 ### Service Provisioning Prompts
 

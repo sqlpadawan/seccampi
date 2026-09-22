@@ -4,14 +4,14 @@ set -euo pipefail
 ################################################################################
 # Raspberry Pi seccam (Motion-Activated Security Camera) Provisioning Script
 ################################################################################
-# Provisions a Raspberry Pi Zero W for headless operation as a PIR-triggered
+# Provisions a Raspberry Pi Zero 2 W for headless operation as a PIR-triggered
 # security camera. Enables camera auto-detection, sets GPU/CMA memory for the
 # libcamera stack, grants camera and GPIO access, and prepares the log, image,
 # and data directories.
 #
 # Prerequisites:
-# - Raspberry Pi OS Lite 32-bit (Debian Trixie, armhf). The Pi Zero W is ARMv6
-#   and cannot run the 64-bit image.
+# - Raspberry Pi OS Lite 64-bit (Debian Trixie, arm64), same as the imx500
+#   project. The 32-bit image should also work but is not the target.
 # - Internet connection established
 # - User account already created
 # - Raspberry Pi camera connected via CSI ribbon cable (Zero-style narrow cable)
@@ -116,12 +116,12 @@ DPKG_ARCH=$(dpkg --print-architecture)
 log "INFO" "Model: $PI_MODEL"
 log "INFO" "Kernel arch: $ARCH  |  Userland arch: $DPKG_ARCH"
 
-if [[ "$PI_MODEL" != *"Zero W"* ]]; then
-    log "WARN" "This script is tuned for a Pi Zero W. Detected '$PI_MODEL'. Continuing anyway."
+if [[ "$PI_MODEL" != *"Zero 2 W"* ]]; then
+    log "WARN" "This script is tuned for a Pi Zero 2 W. Detected '$PI_MODEL'. Continuing anyway."
 fi
 
-if [[ "$DPKG_ARCH" != "armhf" ]]; then
-    log "WARN" "Expected 32-bit armhf userland for a Pi Zero W, found '$DPKG_ARCH'"
+if [[ "$DPKG_ARCH" != "arm64" ]]; then
+    log "WARN" "Expected 64-bit arm64 userland (Raspberry Pi OS Lite 64-bit), found '$DPKG_ARCH'"
 fi
 
 # Image folders are named by LOCAL time (YYYYMMDD/HH). A Pi left on UTC will
@@ -279,7 +279,7 @@ add_or_update_config "camera_auto_detect" "1"
 # GPU memory and CMA pool
 #
 # Mirrors the known-good values from the imx500 project (gpu_mem=128,
-# vc4-kms-v3d with a 128MiB CMA pool). On the Pi Zero W's VC4 ISP, camera
+# vc4-kms-v3d with a 128MiB CMA pool), proven on the same Pi Zero 2 W board. Camera
 # buffers come from CMA; 128MiB comfortably covers a 1080p main stream plus
 # a 640x480 preview stream. If picamera2 reports "Cannot allocate memory"
 # at higher resolutions, raise cma-128 to cma-160 and reboot.
@@ -297,7 +297,7 @@ log "INFO" "Boot configuration updated"
 ################################################################################
 log "INFO" "Disabling WiFi power management..."
 
-# Power save causes SSH lag and slow uploads on the Zero W's 2.4 GHz radio.
+# Power save causes SSH lag and slow uploads on the Zero 2 W's 2.4 GHz radio.
 WIFI_PM_DIR="/etc/NetworkManager/conf.d"
 WIFI_PM_CONF="${WIFI_PM_DIR}/wifi-power-management.conf"
 mkdir -p "$WIFI_PM_DIR"

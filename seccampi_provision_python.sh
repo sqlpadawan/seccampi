@@ -7,13 +7,15 @@ set -euo pipefail
 # Creates the seccam Python virtual environment and detects the attached
 # Raspberry Pi camera module.
 #
-# Pi Zero W (ARMv6) packaging strategy:
+# Packaging strategy (Pi Zero 2 W, 512MB RAM, 16GB card):
 #   Anything with compiled code (picamera2, numpy, pandas, Pillow, paramiko,
-#   lgpio, websockets) is installed via apt, which ships ARMv6-compatible
-#   armhf builds. The venv uses --system-site-packages to see them.
+#   lgpio, websockets) is installed via apt. picamera2 must come from apt
+#   anyway, and apt builds are prebuilt for the Pi, tested together, smaller
+#   on disk than pip wheels, and update with the OS. The venv uses
+#   --system-site-packages to see them.
 #   pip installs only the pure-Python packages (astral, pgeocode) with
-#   --only-binary=:all: so pip fails fast instead of trying to compile
-#   numpy/pandas from source, which can take hours or fail on a Zero W.
+#   --only-binary=:all: so pip can never start compiling a dependency from
+#   source, which is slow and memory-hungry on a 512MB board.
 #
 # Prerequisites:
 # - seccampi_provision.sh already run, and the Pi rebooted since
@@ -52,7 +54,7 @@ readonly DEFAULT_APT_PACKAGES=(
     "rpicam-apps-lite"         # rpicam-hello for camera detection (no preview window deps)
     "python3-pil"              # Pillow: JPEG encoding for saved stills
     "python3-numpy"            # Required by picamera2 and pgeocode
-    "python3-pandas"           # Required by pgeocode (never let pip build this on ARMv6)
+    "python3-pandas"           # Required by pgeocode (avoids a large pip download/build)
     "python3-requests"         # Required by pgeocode (downloads postal data once)
     "python3-gpiozero"         # PIR motion sensor input
     "python3-lgpio"            # gpiozero pin factory backend on Trixie
@@ -439,7 +441,7 @@ install_python_packages() {
 
     for pkg in "${REQUIREMENTS[@]}"; do
         log "INFO" "Installing $pkg..."
-        # --only-binary=:all: guarantees pip never compiles on the Zero W. If a
+        # --only-binary=:all: guarantees pip never compiles on the Pi. If a
         # dependency is not already satisfied by apt and has no wheel, this
         # fails immediately with a clear error instead of building for hours.
         if sudo -u "$ACTUAL_USER" "$VENV_DIR/bin/python3" -m pip install \
