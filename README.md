@@ -8,6 +8,7 @@ number of days. A live view page is available on the local network, and email al
 report upload backlogs, lost footage, and capture outages.
 
 **Hardware:** Raspberry Pi Zero 2 W · Raspberry Pi camera module · PIR motion sensor  
+**OS:** Raspberry Pi OS Lite 64-bit (Debian Trixie)  
 **Stack:** Python · picamera2 · gpiozero · websockets · paramiko (SFTP) · SQLite · systemd
 
 ---
@@ -163,6 +164,32 @@ When nobody has the page open, the server shows the most recent motion image. Wh
 viewer connects, the capture script sends a low-resolution preview at about one frame per
 second, and stops when the last viewer disconnects. This keeps CPU load, heat, and WiFi
 traffic down on the Zero 2 W.
+
+---
+
+## Preparing the SD Card
+
+Use Raspberry Pi Imager on your workstation:
+
+1. **Device:** Raspberry Pi Zero 2 W
+2. **Operating system:** Raspberry Pi OS (other) > **Raspberry Pi OS Lite (64-bit)**
+3. **Storage:** the microSD card
+4. In the OS customisation settings:
+   - Set the hostname (e.g. `seccampi01`)
+   - Create your user account
+   - Configure your 2.4 GHz WiFi network and country
+   - Set the locale and **timezone** (image folders use local time)
+   - On the Services tab, enable SSH (public key authentication recommended)
+
+After the first boot, confirm the OS and architecture:
+
+```bash
+cat /etc/os-release | grep PRETTY_NAME
+dpkg --print-architecture
+```
+
+The first should mention Debian 13 (trixie), and the second should print `arm64`.
+`seccampi_provision.sh` also checks both and warns if they differ.
 
 ---
 
