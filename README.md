@@ -203,10 +203,17 @@ sudo apt update && sudo apt upgrade -y && sudo apt install -y git && sudo reboot
 
 ### Clone the Repository
 
+The GitHub repository is named `seccampi`, but it is cloned into a folder named `seccam`.
+The scripts and systemd units expect the code at `~/seccam`, so include the folder name
+at the end of the clone command:
+
 ```bash
 cd ~
-git clone https://github.com/sqlpadawan/seccam.git
+git clone https://github.com/sqlpadawan/seccampi.git seccam
 ```
+
+The repository is public, so no GitHub login is needed. If git asks for a username,
+check the URL for typos.
 
 ### Prevent Permission Change Conflicts
 

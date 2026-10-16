@@ -37,7 +37,7 @@ set -euo pipefail
 readonly SCRIPT_VERSION="1.0.0"
 readonly LOG_DIR="/var/log/seccam"
 readonly LOG_FILE="${LOG_DIR}/seccampi_provision_service.log"
-readonly DOC_URL="https://github.com/sqlpadawan/seccam"
+readonly DOC_URL="https://github.com/sqlpadawan/seccampi"
 readonly ALL_UNITS=(seccam_server.service seccam_capture.service seccam_capture.timer
                     seccam_upload.service seccam_cleanup.service seccam_cleanup.timer
                     seccam_health.service seccam_health.timer)
